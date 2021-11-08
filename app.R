@@ -80,14 +80,14 @@ ui <- dashboardPage(
     collapsed  = FALSE,
     sidebarMenu(
       menuItem(
-        text       = "Auto Forecast",
+        text       = "Varmelast",
         tabName    = "auto_forecast",
         #badgeLabel = "modeltime",
         badgeColor = "light-blue",
         icon       = icon("cogs")
       ),
       menuItem(
-        text       = "TS Explorer",
+        text       = "Time series explorer",
         tabName    = "data_explorer",
         #badgeLabel = "timetk",
         badgeColor = "red",
@@ -123,7 +123,7 @@ ui <- dashboardPage(
       # * Auto Forecast ----
       tabItem(
         tabName = "auto_forecast",
-        h1("Auto Forecast"),
+        h1("Varmelast analysis"),
         fluidRow(
           column(
             width = 3,
@@ -139,49 +139,70 @@ ui <- dashboardPage(
             dateRangeInput("daterange1",
                            "Date range:",
                            start = today() - 10,
-                           end   = today())
-            
-          ),
-          box(
-            width = 12,
-            
-            column(
-              width = 12,
-              plotOutput("box_forecast_inputs")
+                           end   = today()
             )
           ),
           column(
-            width = 8,
-            uiOutput("box_ensemble_plot")
-          )
-        )
-      ),
-      # * TS Explorer ----
-      tabItem(
-        tabName = "data_explorer",
-        h1("TS Explorer"),
-        fluidRow(
+            width = 3,
+            pickerInput("vars",
+                        "Features:",
+                        c(
+                          "kraftvarmeanlaeg",
+                          "Peak load",
+                          "Local produktion",
+                          "Incineration"
+                        ),
+                        options = list(`actions-box` = TRUE),
+                        multiple = TRUE,
+                        selected  =
+                          c(
+                            "kraftvarmeanlaeg",
+                            "Peak load",
+                            "Local produktion",
+                            "Incineration"
+                          )
+            )
+          ),
+        box(
+          width = 12,
+          
           column(
             width = 12,
-            uiOutput("ts_summary")
-          ),
-          column(
-            width = 6,
-            uiOutput("box_time_plot")
-          ),
-          column(
-            width = 6,
-            uiOutput("box_time_plot2")
+            plotOutput("box_forecast_inputs")
           )
+        ),
+        column(
+          width = 8,
+          uiOutput("box_ensemble_plot")
+        )
+      )
+    ),
+    # * TS Explorer ----
+    tabItem(
+      tabName = "data_explorer",
+      h1("TS Explorer"),
+      fluidRow(
+        column(
+          width = 12,
+          uiOutput("ts_summary")
+        ),
+        column(
+          width = 6,
+          uiOutput("box_time_plot")
+        ),
+        column(
+          width = 6,
+          uiOutput("box_time_plot2")
         )
       )
     )
-  ),
-  # 1.5 Footer ----
-  footer = dashboardFooter(
-    left = p("Created to analysis time series "),
-    right = "2021"
   )
+),
+# 1.5 Footer ----
+footer = dashboardFooter(
+  left = p("Created to analysis time series "),
+  right = "2021"
+)
 )
 
 # ---- 2.0 SERVER ----
@@ -296,12 +317,14 @@ server <- function(session, input, output) {
                              "kraftvarmeanlaeg",
                              "Peak load",
                              "Local produktion",
-                             "Incineration")),
+                             "Incineration"
+                             )),
              value = ceiling(value)
       ) %>%
       drop_na()
     
-    ggplot(data = test,
+    ggplot(data = test %>% 
+             filter(name %in% input$vars),
            aes_string(x = input$test22,
                       y = "value",
                       fill = "name"))  +
