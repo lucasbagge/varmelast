@@ -1,6 +1,7 @@
 from <- today() - 10
 to <- today()
 
+# Do the GET data dynamic so the user can choose the date range
 resp <- 
   GET(
   paste0('https://www.varmelast.dk/api/v1/heatdata/historical?from=',
@@ -10,6 +11,7 @@ resp <-
          '&intervalMinutes=60&contextSite=varmelast_dk')
 )
 
+# Get content of the site
 content <- 
   fromJSON(content(resp, 'text'))
 
@@ -29,7 +31,8 @@ df_wide <-
   unnest()
 
 df <-
-  df_wide %>% cbind(date_tibble) %>%
+  df_wide %>% 
+  cbind(date_tibble) %>%
   mutate(date = ymd_hms(value)) %>%
   janitor::clean_names() %>%
   select(-value) %>%
