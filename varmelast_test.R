@@ -1,6 +1,6 @@
 from <- today() - 10
 to <- today()
-
+# https://www.varmelast.dk/api/v1/heatdata?contextSite=varmelast_dk
 # Do the GET data dynamic so the user can choose the date range
 resp <- 
   GET(
